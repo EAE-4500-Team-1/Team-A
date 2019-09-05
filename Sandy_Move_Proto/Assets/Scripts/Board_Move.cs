@@ -17,8 +17,8 @@ public class Board_Move : MonoBehaviour
     //Constant members of the class.
 
     //Movement constants
-    const float VELOC = .5f; //This constant is used to determine the movement speed in all directions punched in on the keyboard.
-    const float ROTATE = 10f; //This constant is used to determine the rotate rate of the board. 
+    public float VELOC = .5f; //This constant is used to determine the movement speed in all directions punched in on the keyboard.
+    public float ROTATE = 10f; //This constant is used to determine the rotate rate of the board. 
    
    //GameObject assignables: We use this area to track what elements of the game object we are changing.
    //The rigidbody (physics!) of the board. We use this to access the board's attributes.
