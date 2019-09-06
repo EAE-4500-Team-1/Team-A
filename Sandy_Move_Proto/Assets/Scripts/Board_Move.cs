@@ -17,7 +17,7 @@ public class Board_Move : MonoBehaviour
     //Constant members of the class.
 
     //Movement constants
-    const float VELOC = 10f; //This constant is used to determine the movement speed in all directions punched in on the keyboard.
+    public float VELOC = 10f; //This constant is used to determine the movement speed in all directions punched in on the keyboard.
     public float ROTATE = 10f; //This constant is used to determine the rotate rate of the board. 
    
    //GameObject assignables: We use this area to track what elements of the game object we are changing.
@@ -36,6 +36,14 @@ public class Board_Move : MonoBehaviour
     // Start is called before the first frame update
     //We can use this for a lot of setup before the scene even starts.
 
+    //RigidBody Acceleration Foward and Back
+    public Vector3 forwardVeloc;
+    public Vector3 backwardVeloc;
+
+    //RigidBody right and left rotations
+    public Vector3 rightVeloc;
+    public Vector3 leftVeloc;
+
     private float currentRotation = 0f; //poll for our current rotation.
 
     void Start()
@@ -44,7 +52,10 @@ public class Board_Move : MonoBehaviour
         child_trans = this.transform.GetChild(0).transform; //get the transform of the board's physical representation.
         //Rotational assignments.
         rotationClockVeloc = new Vector3(0f, ROTATE, 0f);
-        rotationCounterClockVeloc = new Vector3(0f, ROTATE * -1, 0f);
+        forwardVeloc = transform.forward * VELOC * Time.deltaTime;
+        backwardVeloc = -transform.forward * VELOC * Time.deltaTime;
+        rightVeloc = transform.right * VELOC * Time.deltaTime;
+        leftVeloc = -transform.right * VELOC * Time.deltaTime;
     }
 
     // Update is called once per frame
@@ -55,8 +66,10 @@ public class Board_Move : MonoBehaviour
 
     //This is used for physics calculations.
     void FixedUpdate(){
-        Quaternion rotationClock = Quaternion.Euler(rotationClockVeloc * Time.deltaTime);
-        Quaternion rotationCounterClock = Quaternion.Euler(rotationCounterClockVeloc * Time.deltaTime);
+        forwardVeloc = transform.forward * VELOC * Time.deltaTime;
+        backwardVeloc = -transform.forward * VELOC * Time.deltaTime;     
+        rightVeloc = transform.right * VELOC * Time.deltaTime;
+        leftVeloc = -transform.right * VELOC * Time.deltaTime;  
     }
 
     // A simple method whose entire purpose is to listen to the keyboard event handler to allow our board to move.
@@ -94,17 +107,22 @@ public class Board_Move : MonoBehaviour
 
         //these two if statements handle forward motion and turns.
         if(Input.GetKey(KeyCode.A)){ 
-            //rb.velocity -= new Vector3(VELOC, 0f, 0f);
+            if(rb.velocity.magnitude < 20f){
+                //rb.velocity += (-transform.right * VELOC);
+            }
             gameObject.transform.Rotate(new Vector3(0f, -ROTATE * Time.deltaTime, 0f));
             print("ROTATE LEFT");
         }
 
         if(Input.GetKey(KeyCode.D)){
             //rb.velocity += new Vector3(VELOC, 0f, 0f);
+            if(rb.velocity.magnitude < 20f){
+                //rb.velocity += (transform.right * VELOC);
+            }
             gameObject.transform.Rotate(new Vector3(0f, ROTATE * Time.deltaTime, 0f));
             print("ROTATE RIGHT");
         }
-
+        /*
         //backward motion and turn handler
         if(Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S)){ 
             gameObject.transform.rotation = Quaternion.Euler(new Vector3(0f, -ROTATE, 0f));
@@ -116,6 +134,7 @@ public class Board_Move : MonoBehaviour
             rb.velocity += new Vector3(VELOC, 0f, 0f);
             rb.rotation = rotationCounterClock;
         }
+        */
         if(!Input.anyKeyDown && rb.velocity.magnitude == 0){
             //reset rotation
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
