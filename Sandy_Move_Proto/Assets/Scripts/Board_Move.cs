@@ -18,7 +18,10 @@ public class Board_Move : MonoBehaviour
 
     //Movement constants
     public float VELOC = 10f; //This constant is used to determine the movement speed in all directions punched in on the keyboard.
-    public float ROTATE = 10f; //This constant is used to determine the rotate rate of the board. 
+    public float ROTATE = 10f; //This constant is used to determine the rotate rate of the board.
+    public float MAX_MAG = 30f; //This constant is used to determine the maximum magnitude of an object. 
+
+    public bool controlEnable = true; //This constant is used to enable and disable controls when we are in the air or now.
    
    //GameObject assignables: We use this area to track what elements of the game object we are changing.
    //The rigidbody (physics!) of the board's master object. The master object controls the collider, offsetting the physical board off of the collider for drawing purposes.
@@ -61,7 +64,7 @@ public class Board_Move : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Move();
+        Move();       
     }
 
     //This is used for physics calculations.
@@ -74,6 +77,7 @@ public class Board_Move : MonoBehaviour
 
     // A simple method whose entire purpose is to listen to the keyboard event handler to allow our board to move.
     void Move(){
+        if(controlEnable){
         Vector3 currentVector = rb.velocity; //access the current vector that our board is traveling on.
         if(Input.GetKey(KeyCode.W)){
             if(rb.velocity.magnitude < 20f)
@@ -107,8 +111,8 @@ public class Board_Move : MonoBehaviour
 
         //these two if statements handle forward motion and turns.
         if(Input.GetKey(KeyCode.A)){ 
-            if(rb.velocity.magnitude < 20f){
-                //rb.velocity += (-transform.right * VELOC);
+            if(rb.velocity.magnitude < MAX_MAG){
+                rb.velocity += leftVeloc;
             }
             gameObject.transform.Rotate(new Vector3(0f, -ROTATE * Time.deltaTime, 0f));
             print("ROTATE LEFT");
@@ -116,8 +120,8 @@ public class Board_Move : MonoBehaviour
 
         if(Input.GetKey(KeyCode.D)){
             //rb.velocity += new Vector3(VELOC, 0f, 0f);
-            if(rb.velocity.magnitude < 20f){
-                //rb.velocity += (transform.right * VELOC);
+            if(rb.velocity.magnitude < MAX_MAG){
+                rb.velocity += rightVeloc;
             }
             gameObject.transform.Rotate(new Vector3(0f, ROTATE * Time.deltaTime, 0f));
             print("ROTATE RIGHT");
@@ -135,10 +139,36 @@ public class Board_Move : MonoBehaviour
             rb.rotation = rotationCounterClock;
         }
         */
+        }
         if(!Input.anyKeyDown && rb.velocity.magnitude == 0){
             //reset rotation
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
             currentRotation = 0; //reset
+        }
+    }
+
+    void CorrectFlip(){
+        if(rb.rotation.z > 90){
+            rb.transform.rotation = new Quaternion(rb.transform.rotation.x, rb.transform.rotation.y, 
+            0f, rb.transform.rotation.w);
+        }
+    }
+    void OnCollisionEnter(Collision collision){
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = true;
+        }
+    }
+
+    void OnCollisionStay(Collision collision){
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = true;
+        }
+    }
+
+    void OnCollisionExit(Collision collision){
+
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = false;
         }
     }
 }
