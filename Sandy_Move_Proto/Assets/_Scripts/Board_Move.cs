@@ -23,7 +23,7 @@ public class Board_Move : MonoBehaviour
     public float MAX_MAG = 30f; //This constant is used to determine the maximum magnitude of an object. 
     
 
-    public bool controlEnable = true; //This constant is used to enable and disable controls when we are in the air or now.
+    public bool controlEnable = true; //This constant is used to enable and disable controls when we are in the air for now.
    
    //GameObject assignables: We use this area to track what elements of the game object we are changing.
    //The rigidbody (physics!) of the board's master object. The master object controls the collider, offsetting the physical board off of the collider for drawing purposes.
@@ -55,6 +55,7 @@ public class Board_Move : MonoBehaviour
     {   //since we can't do static assignments for gameobject members, we have to assign them here.
         rb = gameObject.GetComponent<Rigidbody>(); //The rigid body for the board, assigned on start of game.
         child_trans = this.transform.GetChild(0).transform; //get the transform of the board's physical representation.
+        
         //Rotational assignments.
         rotationClockVeloc = new Vector3(0f, ROTATE, 0f);
         forwardVeloc = transform.forward * VELOC * Time.deltaTime;
@@ -71,10 +72,12 @@ public class Board_Move : MonoBehaviour
 
     //This is used for physics calculations.
     void FixedUpdate(){
-        forwardVeloc = transform.forward * VELOC * Time.deltaTime;
+        /*forwardVeloc = transform.forward * VELOC * Time.deltaTime;
         backwardVeloc = -transform.forward * VELOC * Time.deltaTime;     
         rightVeloc = transform.right * VELOC * Time.deltaTime;
         leftVeloc = -transform.right * VELOC * Time.deltaTime;
+        */
+
         Move();
     }
 
@@ -84,22 +87,19 @@ public class Board_Move : MonoBehaviour
         Vector3 currentVector = rb.velocity; //access the current vector that our board is traveling on.
         if(Input.GetKey(KeyCode.W)){
             if(rb.velocity.magnitude < MAX_VELOC)
-            rb.velocity += transform.forward * VELOC;
-            //rb.transform.localPosition += new Vector3(0.0f, 0.0f, VELOC);
+            rb.AddForce(transform.forward * VELOC); //recommended by Raul! This is a better model than just accessing the transform directly. Mass dependent.
             if(currentRotation >= -2.0f){
                 child_trans.Rotate(-1f, 0, 0);
                 currentRotation -= 1f;
             }
-            else{
-
-            }
+        
             print("MoveForward!");
         }
 
         if(Input.GetKey(KeyCode.S)){
             if(rb.velocity.magnitude < MAX_VELOC)
                 {
-                rb.velocity += -transform.forward * VELOC;
+                rb.AddForce( -transform.forward * VELOC);
             }
             if(currentRotation <= 2.0f){
                 child_trans.Rotate(new Vector3(1f, 0, 0));
@@ -130,20 +130,8 @@ public class Board_Move : MonoBehaviour
             gameObject.transform.Rotate(new Vector3(0f, ROTATE * Time.deltaTime, 0f));
             print("ROTATE RIGHT");
         }
-        /*
-        //backward motion and turn handler
-        if(Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S)){ 
-            gameObject.transform.rotation = Quaternion.Euler(new Vector3(0f, -ROTATE, 0f));
-            rb.rotation = rotationCounterClock;
-            //child_trans.Rotate(new Vector3(2f, -1f, -2f));
-        }
 
-        if(Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.S)){
-            rb.velocity += new Vector3(VELOC, 0f, 0f);
-            rb.rotation = rotationCounterClock;
-        }
-        */
-        }
+        } //Control enable close bracket.
         if(!Input.anyKeyDown && rb.velocity.magnitude == 0){
             //reset rotation
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
@@ -157,6 +145,9 @@ public class Board_Move : MonoBehaviour
             0f, rb.transform.rotation.w);
         }
     }
+
+    //This code uses colliders to enable and disable controls until our boarder hits the ground.
+    //This was commented out to permit for tricks, I believe.
     //void OnCollisionEnter(Collision collision){
     //    if(collision.gameObject.tag == "Ground"){
     //        controlEnable = true;
