@@ -85,35 +85,18 @@ public class Board_Move : MonoBehaviour
     void Move(){
         if(controlEnable){
         Vector3 currentVector = rb.velocity; //access the current vector that our board is traveling on.
-        if(Input.GetKey(KeyCode.W)){
-            if(rb.velocity.magnitude < MAX_VELOC)
-            rb.AddForce(transform.forward * VELOC); //recommended by Raul! This is a better model than just accessing the transform directly. Mass dependent.
-            if(currentRotation >= -2.0f){
-                child_trans.Rotate(-1f, 0, 0);
-                currentRotation -= 1f;
-            }
-        
-            print("MoveForward!");
-        }
 
-        if(Input.GetKey(KeyCode.S)){
-            if(rb.velocity.magnitude < MAX_VELOC)
-                {
-                rb.AddForce( -transform.forward * VELOC);
-            }
-            if(currentRotation <= 2.0f){
-                child_trans.Rotate(new Vector3(1f, 0, 0));
-                currentRotation += 1f;
-            }
-            else {
-                
-            }
-            print("MoveBack!");
+        rb.AddForce((transform.forward * Input.GetAxis("Vertical") * VELOC)); //Testing vertical movements
+        //rb.AddForce((transform.right * Input.GetAxis("Horizontal")  * VELOC)); //Test Horizontal.
+        gameObject.transform.Rotate(new Vector3(0f, ROTATE * Input.GetAxis("Horizontal") * Time.deltaTime, 0f)); //Testing rotational movements.
+        if(Input.GetAxis("Vertical") > -0.10f && Input.GetAxis("Vertical") < 0.10f){
+            rb.AddForce((transform.right * Input.GetAxis("Horizontal") * VELOC * Time.deltaTime));
         }
 
         //TODO: Add rotational effects to this.
 
         //these two if statements handle forward motion and turns.
+        /*
         if(Input.GetKey(KeyCode.A)){ 
             if(rb.velocity.magnitude < MAX_MAG){
                 rb.velocity += leftVeloc;
@@ -130,9 +113,9 @@ public class Board_Move : MonoBehaviour
             gameObject.transform.Rotate(new Vector3(0f, ROTATE * Time.deltaTime, 0f));
             print("ROTATE RIGHT");
         }
-
+        */
         } //Control enable close bracket.
-        if(!Input.anyKeyDown && rb.velocity.magnitude == 0){
+        if(rb.velocity.magnitude == 0){
             //reset rotation
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
             currentRotation = 0; //reset
