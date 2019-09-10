@@ -60,6 +60,7 @@ public class Board_Move : MonoBehaviour
     public float BOOST_MULTIPLIER = 1f; //This will cause the boost to update the speed of our travel. 
     public float BOOST_CONSTANT = 20f; //This is what multiplier will update to.
 
+    public float MAX_Z_ROTATION = 20f; //this is needed to prevent our board from rotating too far.
     void Start()
     {   //since we can't do static assignments for gameobject members, we have to assign them here.
         rb = gameObject.GetComponent<Rigidbody>(); //The rigid body for the board, assigned on start of game.
@@ -82,20 +83,22 @@ public class Board_Move : MonoBehaviour
     //This is used for physics calculations.
     void FixedUpdate(){
         Move();
+        PreventFlip();
     }
 
     // A simple method whose entire purpose is to listen to the keyboard/joypad event handler to allow our board to move.
     void Move(){
-        if(controlEnable){
+        
 
         //movement code
         rb.AddForce((transform.forward * Input.GetAxis("Vertical") * VELOC * BOOST_MULTIPLIER)); //Testing vertical movements
-        rb.AddForce((transform.right * Input.GetAxis("Horizontal") * VELOC * BOOST_MULTIPLIER));
+        gameObject.transform.Rotate(new Vector3(0f, ROTATE * Input.GetAxis("Horizontal") * Time.deltaTime * BOOST_MULTIPLIER, 0f)); //Testing rotational movements.
+        //rb.AddForce((transform.right * Input.GetAxis("Horizontal") * VELOC * BOOST_MULTIPLIER));
         
         //rotation code
-        Quaternion deltaRotation = Quaternion.Euler(new Vector3(0, ROTATE, 0) * Input.GetAxis("Horizontal")  * Time.deltaTime);
-        rb.MoveRotation( rb.rotation * deltaRotation);
- 
+        //Quaternion deltaRotation = Quaternion.Euler(new Vector3(0, ROTATE, 0) * Input.GetAxis("Horizontal")  * Time.deltaTime);
+        //rb.MoveRotation( rb.rotation * deltaRotation);
+    if(controlEnable){
         if(Input.GetButtonDown("Jump")){
             rb.AddForce(transform.up * MAX_JUMP_FORCE);
         }
@@ -107,40 +110,49 @@ public class Board_Move : MonoBehaviour
         if(Input.GetButtonUp("Boost")){
             BOOST_MULTIPLIER = 1f;
         }
+    }
 
-        } //Control enable close bracket.
+         //Control enable close bracket.
         if(rb.velocity.magnitude == 0){
             //reset rotation, and reduce force.
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
             currentRotation = 0; //reset
         }
+
     }
 
+    void PreventFlip(){
+        Vector3 zRotation = transform.localRotation.eulerAngles;
+        zRotation.z = 0f;
+        //Mathf.Clamp(zRotation.z, -MAX_Z_ROTATION, MAX_Z_ROTATION);
+        transform.localRotation = Quaternion.Euler(zRotation);
+    }
+/*
     void CorrectFlip(){
         if(rb.rotation.z > 90){
             rb.transform.rotation = new Quaternion(rb.transform.rotation.x, rb.transform.rotation.y, 
             0f, rb.transform.rotation.w);
         }
     }
-
+*/
     //This code uses colliders to enable and disable controls until our boarder hits the ground.
     //This was commented out to permit for tricks, I believe.
-    //void OnCollisionEnter(Collision collision){
-    //    if(collision.gameObject.tag == "Ground"){
-    //        controlEnable = true;
-    //    }
-    //}
+    void OnCollisionEnter(Collision collision){
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = true;
+        }
+    }
 
-    //void OnCollisionStay(Collision collision){
-    //    if(collision.gameObject.tag == "Ground"){
-    //        controlEnable = true;
-    //    }
-    //}
+    void OnCollisionStay(Collision collision){
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = true;
+        }
+    }
 
-    //void OnCollisionExit(Collision collision){
+    void OnCollisionExit(Collision collision){
 
-    //    if(collision.gameObject.tag == "Ground"){
-    //        controlEnable = false;
-    //    }
-    //}
+        if(collision.gameObject.tag == "Ground"){
+            controlEnable = false;
+        }
+    }
 }
