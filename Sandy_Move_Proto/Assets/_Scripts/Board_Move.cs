@@ -21,6 +21,7 @@ public class Board_Move : MonoBehaviour
     public float MAX_VELOC = 30f; //This constant is used to determine the maximum movement speed in all directions punched in on the keyboard.
     public float ROTATE = 10f; //This constant is used to determine the rotate rate of the board.
     public float MAX_MAG = 30f; //This constant is used to determine the maximum magnitude of an object. 
+    public float MAX_JUMP_FORCE = 25f; //This constant is used to determine the amount of force that a jump exerts to propel a user into the air.
     
 
     public bool controlEnable = true; //This constant is used to enable and disable controls when we are in the air for now.
@@ -48,8 +49,16 @@ public class Board_Move : MonoBehaviour
     //RigidBody right and left rotations
     public Vector3 rightVeloc;
     public Vector3 leftVeloc;
-
     private float currentRotation = 0f; //poll for our current rotation.
+
+    //Boost related values: Duration of boost, Rate of cooldown
+   //Rate at which we cooldown or speedup our boost.
+    public float cooldownRate = 1f;
+    public float boostUsageRate = 1f;
+    public float MAX_BOOST = 1f; //the fastest we will ever boost.
+
+    public float BOOST_MULTIPLIER = 1f; //This will cause the boost to update the speed of our travel. 
+    public float BOOST_CONSTANT = 20f; //This is what multiplier will update to.
 
     void Start()
     {   //since we can't do static assignments for gameobject members, we have to assign them here.
@@ -72,51 +81,36 @@ public class Board_Move : MonoBehaviour
 
     //This is used for physics calculations.
     void FixedUpdate(){
-        /*forwardVeloc = transform.forward * VELOC * Time.deltaTime;
-        backwardVeloc = -transform.forward * VELOC * Time.deltaTime;     
-        rightVeloc = transform.right * VELOC * Time.deltaTime;
-        leftVeloc = -transform.right * VELOC * Time.deltaTime;
-        */
-
         Move();
     }
 
-    // A simple method whose entire purpose is to listen to the keyboard event handler to allow our board to move.
+    // A simple method whose entire purpose is to listen to the keyboard/joypad event handler to allow our board to move.
     void Move(){
         if(controlEnable){
-        Vector3 currentVector = rb.velocity; //access the current vector that our board is traveling on.
 
-        rb.AddForce((transform.forward * Input.GetAxis("Vertical") * VELOC)); //Testing vertical movements
-        //rb.AddForce((transform.right * Input.GetAxis("Horizontal")  * VELOC)); //Test Horizontal.
-        gameObject.transform.Rotate(new Vector3(0f, ROTATE * Input.GetAxis("Horizontal") * Time.deltaTime, 0f)); //Testing rotational movements.
-        if(Input.GetAxis("Vertical") > -0.10f && Input.GetAxis("Vertical") < 0.10f){
-            rb.AddForce((transform.right * Input.GetAxis("Horizontal") * VELOC * Time.deltaTime));
+        //movement code
+        rb.AddForce((transform.forward * Input.GetAxis("Vertical") * VELOC * BOOST_MULTIPLIER)); //Testing vertical movements
+        rb.AddForce((transform.right * Input.GetAxis("Horizontal") * VELOC * BOOST_MULTIPLIER));
+        
+        //rotation code
+        Quaternion deltaRotation = Quaternion.Euler(new Vector3(0, ROTATE, 0) * Input.GetAxis("Horizontal")  * Time.deltaTime);
+        rb.MoveRotation( rb.rotation * deltaRotation);
+ 
+        if(Input.GetButtonDown("Jump")){
+            rb.AddForce(transform.up * MAX_JUMP_FORCE);
         }
 
-        //TODO: Add rotational effects to this.
-
-        //these two if statements handle forward motion and turns.
-        /*
-        if(Input.GetKey(KeyCode.A)){ 
-            if(rb.velocity.magnitude < MAX_MAG){
-                rb.velocity += leftVeloc;
-            }
-            gameObject.transform.Rotate(new Vector3(0f, -ROTATE * Time.deltaTime, 0f));
-            print("ROTATE LEFT");
+        if(Input.GetButtonDown("Boost")){
+            BOOST_MULTIPLIER = BOOST_CONSTANT;
         }
 
-        if(Input.GetKey(KeyCode.D)){
-            //rb.velocity += new Vector3(VELOC, 0f, 0f);
-            if(rb.velocity.magnitude < MAX_MAG){
-                rb.velocity += rightVeloc;
-            }
-            gameObject.transform.Rotate(new Vector3(0f, ROTATE * Time.deltaTime, 0f));
-            print("ROTATE RIGHT");
+        if(Input.GetButtonUp("Boost")){
+            BOOST_MULTIPLIER = 1f;
         }
-        */
+
         } //Control enable close bracket.
         if(rb.velocity.magnitude == 0){
-            //reset rotation
+            //reset rotation, and reduce force.
             child_trans.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
             currentRotation = 0; //reset
         }
