@@ -13,7 +13,7 @@ public class Aggro_AOE : MonoBehaviour
         if (other.gameObject.tag == "Player")
         {
             parent.isInAggroRange = true;
-            parent.Player = other.gameObject;
+            parent.Aggro_Target = other.gameObject;
         }
     }
     private void OnTriggerExit(Collider other)

@@ -25,7 +25,7 @@ public class Aggro_Range : MonoBehaviour
         if (other.gameObject.tag == "Player")
         {
             parent.isInAggroRange = true;
-            parent.Player = other.gameObject;
+            parent.Aggro_Target = other.gameObject;
         }
     }
     private void OnTriggerStay(Collider other)
@@ -33,7 +33,6 @@ public class Aggro_Range : MonoBehaviour
         
         if (other.gameObject.tag == "Player")
         {
-            print(Vector3.Distance(transform.position, other.transform.position));
             if (Vector3.Distance(transform.position, other.transform.position) <= aggroDistance)
             {
                 FOV_Range.SetActive(false);
@@ -46,7 +45,7 @@ public class Aggro_Range : MonoBehaviour
         if (other.gameObject.tag == "Player")
         {
             parent.isInAggroRange = false;
-            parent.Player = null;
+            parent.Aggro_Target = null;
         }
     }
 }

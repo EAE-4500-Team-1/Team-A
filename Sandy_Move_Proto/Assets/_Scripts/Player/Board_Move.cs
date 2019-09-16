@@ -8,8 +8,6 @@ using UnityEngine;
     A) Rudimentary movement
     B) Rudimentary rotational, such as when one turns on the board.
     C) Storing constant movement values that can easily be adjusted at the top of the .cs file.
-
-
  */
 public class Board_Move : MonoBehaviour
 {
